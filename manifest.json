@@ -1,0 +1,23 @@
+{
+    "files": {
+        "README.md": "cdeb767ccfe680669df246c19e89bcbb28a111b734945a729e08e5afda41d193",
+        "config.json": "7cafcf16c0fca30b1162ba1a19e89d3ce6304d0038ea4880ba9d443935d552d8",
+        "index.js": "60ce9ae0ac376922aa9549fb399f53e149c49afb2b5e0fa1ce36e26f143d4292",
+        "module.json": "54345fb1d1ddfe9d00153499683cfc74e11cbedffbf02a500402ed36a7f8c97e"
+    },
+    "defs": {
+        "C_PLAYER_LOCATION": 5,
+        "C_PRESS_SKILL": 4,
+        "C_START_COMBO_INSTANT_SKILL": 4,
+        "C_START_SKILL": 7,
+        "C_START_TARGETED_SKILL": 6,
+        "C_USE_ITEM": 3,
+        "S_ABNORMALITY_BEGIN": 3,
+        "S_ABNORMALITY_END": 1,
+        "S_ACTION_END": 5,
+        "S_EACH_SKILL_RESULT": 12,
+        "S_LOGIN": 10,
+        "S_PLAYER_STAT_UPDATE": 10,
+        "S_START_COOLTIME_SKILL": 3
+    }
+}
