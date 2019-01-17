@@ -205,7 +205,7 @@ module.exports = function Nyan(dispatch) {
 	catch(error) //if file not exist this creates new
 	{
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			90, 750, true, 0, 2000, false, 10000];//5-10
+			750, 90, true, 0, 2000, false, 1100];//5-10
 		config[sorcerer]=[];
 		config["r"+sorcerer]=[];
 		config[archer]=[];
@@ -288,21 +288,32 @@ module.exports = function Nyan(dispatch) {
 		if(x==undefined){
 			enabled = !enabled;
 			config[settings][1]=(enabled ? true : false);saveConfig();
-			say( 			 cp+"\nar "+cr+"- on/off"
-							+cp+"\ndebuff "+cr+"- on/off debuff"
-							+cp+"\nmana "+cr+"- add autoAttack to regain mana"
-							+cp+"\nmanadelay "+cy+"[delay]"+cr+"- AutoAttack delay, Default is 1400"
-							+cp+"\ncoafblre "+cr+"- continue after block release"
-							+cp+"\nbbdelay "+cy+"[delay]"+cr+"- Barrage>Block delay, default is 90"
-							+cp+"\ndebuffd "+cy+"[delay]"+cr+"- debuff>block delay"
-							//+cp+"\ndebuffi "+cy+"[delay]"+cr+"- debuff>debuff delay"
-							+co+"\nMacro " + (enabled ? 'Activated':'Deactivated')
-			
+			say( 			 
+							cb+"\nMacro " + (enabled ? cg+'Activated ': cr+'Deactivated ')+cg+" ("+cp+"!ar info "+cb+"for commands"+cg+")"
+							+cb+"\nDebuff: "+(shoulddebuff ? cg+'' :cr+'Not ')+'Active, '
+							+cb+"Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active'
+							+(autoAttack ? (cb+"ManaDelay: "+cg+config[settings][11]):'')
 			);
 		}else{
 			
 			// Commands
 			switch (x) {
+/*commands*/	case 'info':
+/*commands*/	case 'help':
+/*commands*/	case 'commands':
+/*commands*/	case 'lanceroid':
+					say(
+							cp+"\nar "+cb+"- on/off"
+							+cp+"\ndebuff "+cb+"- on/off, Debuff: "+(shoulddebuff ? cg+'' :cr+'Not ')+'Active'
+							+cp+"\nmana "+cb+"- add ComboAttack to regain mana, Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active, '
+							+cp+"\nmanadelay "+cy+"[delay]"+cb+" - ComboAttack delay, normal: 390-2400, Current: "+cg+config[settings][11]
+							+cp+"\ncoafblre "+cb+"- continue after block release: "+(coafblre ? cg+'' :cr+'Not ')+'Active'
+							+co+"\nUse next commands if your barrage/debuff Block canceled before hit:"
+							+cp+"\nbbdelay "+cy+"[delay]"+cb+" - Barrage>Block delay, default is 90"
+							+cp+"\ndebuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
+							//+cp+"\ndebuffi "+cy+"[delay]"+cb+"- debuff>debuff delay"
+					);
+				break;
 /*noaction*/	case 'noaction':
 					NO_ACTION = !NO_ACTION;say(cg+"NO_ACTION "+ cg + (NO_ACTION ? 'Activated':'Deactivated'));
 				break;
