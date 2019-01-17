@@ -1,3 +1,5 @@
+Since i don't really know how does update feature works, - check for updates manually..
+
 Commands:
 
 !ar - list of commands + on/off mod
