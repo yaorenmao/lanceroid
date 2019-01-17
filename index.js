@@ -68,9 +68,12 @@ const { Readable, Writeable } = require('tera-data-parser/lib/protocol/stream');
 const ONLY_USER_HOOK = {order: -1000000, filter: {fake: false}};
 
 module.exports = function Nyan(dispatch) {
+		let leaping=false;
+		let doLeap=true;
 		let debuff=true;
 		let nomana=false;
 		let laStatus=0;//lancer status
+		let forceMana=false;
 		let NO_ACTION=false;
 		let eTarget=0;
 		let targets;
@@ -125,9 +128,9 @@ module.exports = function Nyan(dispatch) {
 	{
 		config = require('./config.json');
 		if (config["settings"] === undefined || config["settings"] == null)
-		{//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=barraged, 6=debuffd, 7=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL]
+		{//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=barraged, 6=debuffd, 7=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING]
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100];//5-10
+			750, 90, true, 0, 2000, false, 1100, false];//5-10
 		}
 		if (config["sorc"] === undefined || config["sorc"] == null)
 		{
@@ -205,7 +208,7 @@ module.exports = function Nyan(dispatch) {
 	catch(error) //if file not exist this creates new
 	{
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100];//5-10
+			750, 90, true, 0, 2000, false, 1100, false];//5-10
 		config[sorcerer]=[];
 		config["r"+sorcerer]=[];
 		config[archer]=[];
@@ -308,17 +311,23 @@ module.exports = function Nyan(dispatch) {
 							+cp+"\nmana "+cb+"- add ComboAttack to regain mana, Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active, '
 							+cp+"\nmanadelay "+cy+"[delay]"+cb+" - ComboAttack delay, normal: 390-2400, Current: "+cg+config[settings][11]
 							+cp+"\ncoafblre "+cb+"- continue after block release: "+(coafblre ? cg+'' :cr+'Not ')+'Active'
+							+cp+"\nleap "+cb+"- on/off, Leaping(test combo): "+(leaping ? cg+'' :cr+'Not ')+'Active'
 							+co+"\nUse next commands if your barrage/debuff Block canceled before hit:"
 							+cp+"\nbbdelay "+cy+"[delay]"+cb+" - Barrage>Block delay, default is 90"
 							+cp+"\ndebuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
 							//+cp+"\ndebuffi "+cy+"[delay]"+cb+"- debuff>debuff delay"
+							+cy+"\nUse Fishing Bait I: start/pause, "+cr+"Red Worm: Block, "+cg+"Green Worm: Dodge, "+cb+"Blue Worm: When need mana, "+cp+"N"+cy+"E"+cb+"W"+cg+"! "+cp+" >"+cy+">"+cb+"> "+cv+"Purple Worm: enable/disable Leap Combo"
 					);
+				break;
+/*Debuff*/		case 'leap':
+					leaping = !leaping;say(cb+"Leaping "+ cg + (leaping ? cg+'Activated': cg+'Deactivated'));
+					config[settings][12]=leaping;saveConfig();
 				break;
 /*noaction*/	case 'noaction':
 					NO_ACTION = !NO_ACTION;say(cg+"NO_ACTION "+ cg + (NO_ACTION ? 'Activated':'Deactivated'));
 				break;
-/*TEST SKILL DEL*/case 'delay':
-					if(y==undefined){say(co+"!ar delay "+cy+"[delay], "+cb+"current delay = "+cg+config[settings][9]);break;}
+/*TEST SKILL DEL*/case 'tdelay':
+					if(y==undefined){say(co+"!ar tdelay "+cy+"[delay], "+cb+"current delay = "+cg+config[settings][9]);break;}
 					tSkillDel=y;say(cp+"Test skill delay set to "+cy+tSkillDel);
 					config[settings][9]=tSkillDel;saveConfig();
 				break;
@@ -1027,10 +1036,17 @@ dispatch.command.message(cp+"How to create macro:\n"
 					}//Release Block
 					else{startSkill(260100);}// dodge now
 				break;
+/*Dodge*/		case 206007:// BLUE WORM BAIT
+					forceMana=!forceMana;say(cb+"Mana Mode "+(forceMana ? cg+'Enabled': cr+'Disabled'));
+				break;
+/*Dodge*/		case 206008:// Purple WORM BAIT
+					leaping=!leaping;say(cb+"Leaping "+(leaping ? cg+'Activated': cr+'Disabled'));
+				break;
 /*Activate*/	default:// ANY OTHER BAIT
 					if(bait && laStatus==1){laStatus=0;releaseSkill(lb);lm();say("Macro Lancer continue..");break;}//IF BLOCKING
+					if(bait){pressSkill(lb);releaseSkill(lb);}//to allow movement after no action bug
 					laStatus=0;
-					bait = !bait;say("Macro " + (bait ? 'Enabled':'Paused'));
+					bait = !bait;say("Macro " + (bait ? cg+'Enabled': cy+'Paused'));
 					if(!bait)lc=0;
 					//if(config[settings][0]==lancer)
 					setTimeout(() => {lm()},200);
@@ -1064,12 +1080,18 @@ function lm(){
 				setTimeout(() => {debuff=true;}, debuffi)//Debuff interval
 			}, GetDelay(0))//Debuff Delay
 		}else
-		if(autoAttack && nomana){// Mana
+		if(forceMana || autoAttack && nomana){// Mana
 			nomana=false;startSkill(11200);
 			setTimeout(() => {//SKILL>BLOCK DELAY
 				pressSkill(lb);releaseSkill(lb);lm();
 				setTimeout(() => {nomana=true;}, aadelay)//mana interval
-			}, 250)//AutoAttack
+			}, 250)//AutoAttack delay
+		}else
+		if(leaping && doLeap){// Leap
+			doLeap=false;Leap();
+			setTimeout(() => {
+				doLeap=true;
+			}, 18000)//Leap CD
 		}else// Barrage...
 		{
 			startSkill(lba2);
@@ -1109,40 +1131,147 @@ function lm(){
 	}
 */
 
+	//Class Test
+	function Leap(){//=>Barrage
+		if(true)
+		{
+			startSkill(lba2);
+			setTimeout(() => {//=>Spring
+				
+				
+				startSkill(131100);
+				setTimeout(() => {//=>Wallop
+					
+					
+					startSkill(251000);
+					setTimeout(() => {//=>SuperLeap
+						
+						
+						startSkill(280100);//=>LockDown
+						setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
+							
+							
+startSkill(210401);//=>Mana
+setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
+	
+	
+	startSkill(11200);//=>Exit to lm
+	setTimeout(() => {pressSkill(lb);releaseSkill(lb);
+		
+		lm();
+		
+	},550//250//AA delay
+	)
+	
+},50);//long block
+},600//Lock>Mana delay
+)
+							
+						},90);//long block
+						},1250//~1200(with atkspeed pots)//superleap>LockDown delay
+						)
+						
+					},600//wallop>superleap delay
+					)
+					
+				},780//spring>Wallop delay
+				)
+				
+			},115//barrage>spring delay
+			)
+		}
+	}
+
+
 
 
 	
 	//Class Test
-	function la(){
-		if(bait){startSkill(11200);
-			lc++;
-			setTimeout(() => {pressSkill(lb);releaseSkill(lb);//1ST Skill
-			if(lc<99999){la();}else//if ----lc<1
-			{
+	function la(){//Barrage
+		if(bait){lc++;startSkill(lba2);
+			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
+			lu();//1ST Skill
+			if(lc<0){la();}else//if ----lc<1
+			{//say(cg+"La Stoping");
 				lc=0;
-			}},tSkillDel)//115
+			}},115//barrage>spring delay
+			)
 		}
 	}
 	//Next skill in chain
-	function lu(){
-		if(bait){startSkill(11200);//startSkill(lba2);
-			lc++;
-			setTimeout(() => {pressSkill(lb);releaseSkill(lb);le();//2ND Skill
+	function lu(){//Spring
+		if(bait){lc++;startSkill(131100);//startSkill(lba2);
+			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
+			le();//2ND Skill
 			if(false){la()}else//if ----lc<1
 			{
 				lc=0;
-			}},520//tSkillDel
+			}},780//tSkillDel//spring>Wallop delay
 			)
 		}
 	}//barraged - barrage delay //tSkillDel - test skill delay
-	function le(){
-		if(bait){startSkill(lba2);
-			lc++;
-			setTimeout(() => {pressSkill(lb);releaseSkill(lb);//3RD Skill
+	function le(){//Wallop
+		if(bait){lc++;startSkill(251000);
+			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
+			li();//3RD Skill
 			if(false){la()}else//if ----lc<1
 			{
 				lc=0;
-			}},barraged//tSkillDel
+			}},600//tSkillDel//wallop>superleap delay
+			)
+		}
+	}
+	function li(){//SuperLeap
+		if(bait){lc++;startSkill(280100);
+			setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);lo();},90);//continue of lm
+			if(false){la()}else//if ----lc<1
+			{
+				lc=0;
+			}},1250//1200(with atkspeed pots)//tSkillDel//barraged//superleap>LockDown delay
+			)
+		}
+	}
+	function lo(){//Lockdown
+		if(bait){lc++;startSkill(210401);
+			setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);ly();},50);
+			//lu();//1ST Skill
+			if(lc<0){la();}else//if ----lc<1
+			{//say(cg+"La Stoping");
+				lc=0;
+			}},600//Lock>Onslaught delay
+			)
+		}
+	}
+	function ly(){//Mana
+		if(bait){lc++;startSkill(11200);//11200
+			setTimeout(() => {pressSkill(lb);releaseSkill(lb);lz();
+			//lu();//1ST Skill
+			if(lc<0){ly();}else//if ----lc<1
+			{//say(cg+"La Stoping");
+				lc=0;
+			}},550//250//AA delay
+			)
+		}
+	}
+	function lz(){//FINAL
+		if(bait){lc++;startSkill(lba2);//11200
+			setTimeout(() => {pressSkill(lb);releaseSkill(lb);//lx();
+			//lu();//1ST Skill
+			if(lc<0){la();}else//if ----lc<1
+			{//say(cg+"La Stoping");
+				lc=0;
+			}},90//AA delay
+			)
+		}
+	}
+	function lx(){//FINAL
+		if(bait){lc++;startSkill(lba2);//11200
+			setTimeout(() => {pressSkill(lb);releaseSkill(lb);
+			//lu();//1ST Skill
+			if(lc<0){la();}else//if ----lc<1
+			{//say(cg+"La Stoping");
+				lc=0;
+			}},90//AA delay
 			)
 		}
 	}
@@ -1217,7 +1346,7 @@ function lm(){
 	// Called when??? can i use it to disable or fake anything?..
     dispatch.hook('S_ACTION_STAGE', 8, event => { //, {order: -1000000, filter: {fake: null}} //to hook only crafted
         if (!enabled || !(event.gameId == gameId)) return;
-		if(NO_ACTION){return false}
+		if(NO_ACTION && event.skill.id==lba2){return false}
 		eve(event.skill.id,3); getTime();
 		abn('T'+timeid+': S_ACTION_STAGE: ' + event.skill.id, "#00FF00");
 		//it's example from op-zerk
@@ -1229,7 +1358,7 @@ function lm(){
 	// Called when??? can i use it to disable or fake anything?..
     dispatch.hook('S_ACTION_END', 5, {order: -1000000, filter: {fake: null}}, event => {
         if (!enabled || !(event.gameId == gameId)) return;
-		if(NO_ACTION){return false}
+		if(NO_ACTION && event.skill.id==lba2){return false}
 		eve(event.skill.id,4); getTime();
 		abn('T'+timeid+': S_ACTION_END: ' + event.skill.id, "#00FF00");
 		//it's example from op-zerk
@@ -1330,7 +1459,8 @@ function lm(){
 			dest: { x: 0, y: 0, z: 0 },
 			unk: true,
 			moving: false,
-			target: targ, //{ low: 0, high: 0, unsigned: true },
+            continue: false,/////////////////////////////////////////??
+			target: 0n, //targ
 			unk2: false
 		});
 		debug('T'+timeid+': C_START_SKILL(Code): ' + argskillid, "#FF00FF");

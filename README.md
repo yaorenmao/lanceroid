@@ -8,6 +8,10 @@ Use Fishing Red Worm to Block/Release Block while Lanceroiding
 
 Use Fishing Green Worm to Dodge while Lanceroiding
 
+Use Fishing Blue Worm to Manually Switch between Combo Attack to Fill Mana and Barrage
+
+Use Fishing Purple Worm to Enable/Disable Leaping combo (test function)
+
 Other Commands:
 
 
