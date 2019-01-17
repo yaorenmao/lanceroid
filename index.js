@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-//test//auto up date uwu uwuwuuw
+//test//auto up date
 const settings= "settings";
 
 const sorcerer = "sorc";
