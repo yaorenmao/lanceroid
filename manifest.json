@@ -1,8 +1,7 @@
 {
     "files": {
         "README.md": "cdeb767ccfe680669df246c19e89bcbb28a111b734945a729e08e5afda41d193",
-        "index.js": "60ce9ae0ac376922aa9549fb399f53e149c49afb2b5e0fa1ce36e26f143d4292",
-        "module.json": "54345fb1d1ddfe9d00153499683cfc74e11cbedffbf02a500402ed36a7f8c97e"
+        "index.js": "60ce9ae0ac376922aa9549fb399f53e149c49afb2b5e0fa1ce36e26f143d4292"
     },
     "defs": {
         "C_PLAYER_LOCATION": 5,
