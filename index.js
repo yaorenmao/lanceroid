@@ -64,6 +64,11 @@ const wallop=251100;
 const superleap=280100;
 const spring = 131100;
 
+// ZERK
+	const PUNISH_SKILL=320101;
+	const ZERK_BLOCK=20231;
+	const ZERK_DODGE=290100;
+
 const { Readable, Writeable } = require('tera-data-parser/lib/protocol/stream');
 const ONLY_USER_HOOK = {order: -1000000, filter: {fake: false}};
 
@@ -72,7 +77,7 @@ module.exports = function Nyan(dispatch) {
 		let doLeap=true;
 		let debuff=true;
 		let nomana=false;
-		let laStatus=0;//lancer status
+		let laStatus=0;//Macro status
 		let forceMana=false;
 		let NO_ACTION=false;
 		let eTarget=0;
@@ -128,9 +133,9 @@ module.exports = function Nyan(dispatch) {
 	{
 		config = require('./config.json');
 		if (config["settings"] === undefined || config["settings"] == null)
-		{//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=barraged, 6=debuffd, 7=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING]
+		{//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY]
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100, false];//5-10
+			750, 90, true, 0, 2000, false, 1100, false, 90];//5-10
 		}
 		if (config["sorc"] === undefined || config["sorc"] == null)
 		{
@@ -208,7 +213,7 @@ module.exports = function Nyan(dispatch) {
 	catch(error) //if file not exist this creates new
 	{
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100, false];//5-10
+			750, 90, true, 0, 2000, false, 1100, false, 90];//5-10
 		config[sorcerer]=[];
 		config["r"+sorcerer]=[];
 		config[archer]=[];
@@ -244,8 +249,23 @@ module.exports = function Nyan(dispatch) {
 		fs.writeFileSync(path.join(__dirname, "config.json"), JSON.stringify(config, null, 2));
 		//fs.writeFile(path.join(__dirname, 'config.json'), JSON.stringify(config, null, '\t'), err => {});
 	}
-	//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=shoulddebuff, 5=barraged, 6=debuffd, 7=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 8=CATCHED_ID, 9=TEST_SKILL_DELAY]
+	//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY]
 	// Load from config
+	
+	//INIT
+	if(config[settings][0]==undefined){config[settings][0]="sorc";saveConfig();}
+	if(config[settings][1]==undefined){config[settings][1]=true;saveConfig();}
+	if(config[settings][2]==undefined){config[settings][2]=false;saveConfig();}
+	if(config[settings][3]==undefined){config[settings][3]=false;saveConfig();}
+	if(config[settings][4]==undefined){config[settings][4]=false;saveConfig();}
+	if(config[settings][5]==undefined){config[settings][5]=false;saveConfig();}
+	if(config[settings][10]==undefined){config[settings][10]=false;saveConfig();}
+	if(config[settings][11]==undefined){config[settings][11]="2000";saveConfig();}
+	if(config[settings][12]==undefined){config[settings][12]=false;saveConfig();}
+	if(config[settings][13]==undefined){config[settings][13]=90;saveConfig();}
+	if(config[settings][7]==undefined){config[settings][7]=90;saveConfig();}
+	if(config[settings][6]==undefined){config[settings][6]=90;saveConfig();}
+	
 	let shoulddebuff = config[settings][4]; //Auto debuff
 	let coafblre = config[settings][5]; //Continue Macro After Block Release
 	let barraged = config[settings][6]; //Barrage delay
@@ -254,6 +274,7 @@ module.exports = function Nyan(dispatch) {
 	let tSkillDel = config[settings][9]; //Test skill delay
 	let autoAttack = config[settings][10]; //AutoAttack to regain mana
 	let aadelay = config[settings][11]; //AutoAttack interval
+	let punishd = config[settings][13]; //Punish Zerk delay
 	
 	
 	let bait = false; //BAIT CONTROL
@@ -311,13 +332,19 @@ module.exports = function Nyan(dispatch) {
 							+cp+"\nmana "+cb+"- add ComboAttack to regain mana, Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active, '
 							+cp+"\nmanadelay "+cy+"[delay]"+cb+" - ComboAttack delay, normal: 390-2400, Current: "+cg+config[settings][11]
 							+cp+"\ncoafblre "+cb+"- continue after block release: "+(coafblre ? cg+'' :cr+'Not ')+'Active'
-							+cp+"\nleap "+cb+"- on/off, Leaping(test combo): "+(leaping ? cg+'' :cr+'Not ')+'Active'
 							+co+"\nUse next commands if your barrage/debuff Block canceled before hit:"
 							+cp+"\nbbdelay "+cy+"[delay]"+cb+" - Barrage>Block delay, default is 90"
 							+cp+"\ndebuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
+							+cp+"\npunishd "+cy+"[delay]"+cb+" - Punish>Block delay"+cv+"(Berserker)"+cb+", default is 90"
 							//+cp+"\ndebuffi "+cy+"[delay]"+cb+"- debuff>debuff delay"
-							+cy+"\nUse Fishing Bait I: start/pause, "+cr+"Red Worm: Block, "+cg+"Green Worm: Dodge, "+cb+"Blue Worm: When need mana, "+cp+"N"+cy+"E"+cb+"W"+cg+"! "+cp+" >"+cy+">"+cb+"> "+cv+"Purple Worm: enable/disable Leap Combo"
+							+cy+"\nUse Fishing Bait I: start/pause, "+cr+"Red Worm: Block, "+cg+"Green Worm: Dodge, "+cb+"Blue Worm: When need mana"
 					);
+				break;
+/*Block Delay*/	case 'punishd':
+					if(y==undefined){say(cp+"ar punishd "+cy+"[delay]"+cp+", current = "+config[settings][13]+", default is 90");break;}
+					if(y<30){say(cp+"Select value more than 30 to prevent crash pls");break}
+					punishd=y;say(cp+"Punish>Block delay set to " + y +" (default is 90)");
+					config[settings][13]=y;saveConfig();
 				break;
 /*Debuff*/		case 'leap':
 					leaping = !leaping;say(cb+"Leaping "+ cg + (leaping ? cg+'Activated': cg+'Deactivated'));
@@ -350,12 +377,14 @@ module.exports = function Nyan(dispatch) {
 				break;
 /*Block Delay*/	case 'bbdelay':
 					if(y==undefined){say(cp+"ar bbdelay "+cy+"[delay]"+cp+", current = "+config[settings][6]+", default is 90");break;}
+					if(y<30){say(cp+"Select value more than 30 to prevent crash pls");break}
 					barraged=y;say(cp+"Barrage>Block delay set to " + y +" (default is 90)");
 					config[settings][6]=y;saveConfig();
 				break;
 				
 /*Block Delay*/	case 'debuffd':
 					if(y==undefined)say(cp+"lancer debuffd "+cy+"[delay]"+cp+" (default is ?)");
+					if(y<30){say(cp+"Select value more than 30 to prevent crash pls");break}
 					debuffd=y;say(cp+"Lancer debuff delay set to " + y +" (default is ?)");
 					config[settings][7]=y;saveConfig();
 				break;
@@ -1021,55 +1050,92 @@ dispatch.command.message(cp+"How to create macro:\n"
 	dispatch.hook('C_USE_ITEM', 3, event => {
 		if(enabled && (event.id==206004 || event.id==206003 || event.id==206002 || event.id==206001 || event.id==206000 || event.id==206005 || event.id==206006 || event.id==206007 || event.id==206008 || event.id==206009))
 		{
-			switch (event.id) {
+			switch (event.id) {//if(config[settings][0]=="zerk")
 /*Block*/		case 206005:// RED WORM BAIT
-					if(bait){
-						if(laStatus!=1){// IF NOT BLOCKING> DO BLOCK
-						laStatus=1;say("Macro Lancer block..");}else
-						{laStatus=0;releaseSkill(lb);if(coafblre){lm();say("Macro Lancer continue..");}}//Release Block
-					}else{if(laStatus!=1){laStatus=1;pressSkill(lb);}else{if(laStatus!=2){laStatus=2;releaseSkill(lb);}}}
+					if(config[settings][0]=="zerk"){
+						if(bait){
+							if(laStatus!=1){// IF NOT BLOCKING> DO BLOCK
+							laStatus=1;say("Macro Zerk block..");}else
+							{laStatus=0;releaseSkill(ZERK_BLOCK);if(coafblre){lm();say("Macro Zerk continue..");}}//Release Block
+						}else{if(laStatus!=1){laStatus=1;pressSkill(ZERK_BLOCK);}else{if(laStatus!=2){laStatus=2;releaseSkill(ZERK_BLOCK);}}}
+					}
+					if(config[settings][0]=="lanc"){
+						if(bait){
+							if(laStatus!=1){// IF NOT BLOCKING> DO BLOCK
+							laStatus=1;say("Macro Lancer block..");}else
+							{laStatus=0;releaseSkill(lb);if(coafblre){lm();say("Macro Lancer continue..");}}//Release Block
+						}else{if(laStatus!=1){laStatus=1;pressSkill(lb);}else{if(laStatus!=2){laStatus=2;releaseSkill(lb);}}}
+					}
 				break;
 /*Dodge*/		case 206006:// GREEN WORM BAIT
-					if(bait){// dodge after combo ends
-						if(laStatus==1){laStatus=2;releaseSkill(lb);startSkill(260100);bait = false;}
-						laStatus=2;say("Macro Lancer dodge..");
-					}//Release Block
-					else{startSkill(260100);}// dodge now
+					if(config[settings][0]=="zerk"){
+						if(bait){// dodge after combo ends
+							if(laStatus==1){laStatus=2;releaseSkill(ZERK_BLOCK);startSkill(ZERK_DODGE);bait = false;}
+							laStatus=2;say("Macro Zerk dodge..");
+						}//Release Block
+						else{startSkill(ZERK_DODGE);}// dodge now
+					}
+					if(config[settings][0]=="lanc"){
+						if(bait){// dodge after combo ends
+							if(laStatus==1){laStatus=2;releaseSkill(lb);startSkill(260100);bait = false;}
+							laStatus=2;say("Macro Lancer dodge..");
+						}//Release Block
+						else{startSkill(260100);}// dodge now
+					}
 				break;
 /*Dodge*/		case 206007:// BLUE WORM BAIT
-					forceMana=!forceMana;say(cb+"Mana Mode "+(forceMana ? cg+'Enabled': cr+'Disabled'));
+					if(config[settings][0]=="lanc"){
+						forceMana=!forceMana;say(cb+"Mana Mode "+(forceMana ? cg+'Enabled': cr+'Disabled'));
+					}
 				break;
 /*Dodge*/		case 206008:// Purple WORM BAIT
-					leaping=!leaping;say(cb+"Leaping "+(leaping ? cg+'Activated': cr+'Disabled'));
+					if(config[settings][0]=="lanc"){
+						leaping=!leaping;say(cb+"Leaping "+(leaping ? cg+'Activated': cr+'Disabled'));
+					}
 				break;
 /*Activate*/	default:// ANY OTHER BAIT
-					if(bait && laStatus==1){laStatus=0;releaseSkill(lb);lm();say("Macro Lancer continue..");break;}//IF BLOCKING
-					if(bait){pressSkill(lb);releaseSkill(lb);}//to allow movement after no action bug
-					laStatus=0;
-					bait = !bait;say("Macro " + (bait ? cg+'Enabled': cy+'Paused'));
-					if(!bait)lc=0;
-					//if(config[settings][0]==lancer)
-					setTimeout(() => {lm()},200);
-					if(autoAttack){setTimeout(() => {nomana=true},aadelay);}
+					if(config[settings][0]=="zerk"){
+						if(bait && laStatus==1){laStatus=0;releaseSkill(ZERK_BLOCK);lm();say("Macro Zerk continue..");break;}//IF BLOCKING
+						if(bait){pressSkill(ZERK_BLOCK);releaseSkill(ZERK_BLOCK);}//to allow movement after no action bug
+						laStatus=0;
+						bait = !bait;say("Macro " + (bait ? cg+'Enabled': cy+'Paused'));
+						if(!bait)lc=0;
+						setTimeout(() => {la()},200);
+					}
+					if(config[settings][0]=="lanc"){
+						if(bait && laStatus==1){laStatus=0;releaseSkill(lb);lm();say("Macro Lancer continue..");break;}//IF BLOCKING
+						if(bait){pressSkill(lb);releaseSkill(lb);}//to allow movement after no action bug
+						laStatus=0;
+						bait = !bait;say("Macro " + (bait ? cg+'Enabled': cy+'Paused'));
+						if(!bait)lc=0;
+						//if(config[settings][0]==lancer)
+						setTimeout(() => {lm()},200);
+						if(autoAttack){setTimeout(() => {nomana=true},aadelay);}
+					}
 				break;
 			}
 		}
 	});
-/* laStatus: 0=nothing 1=block 2=dodge
-	80 malo dlya bez cdr i s crit etch
-	90 - norm
-*/
-//0=skill skill ID
-//1=skill Name
-//3=skill Type of cast
-//4=skill Priority
-//5=skill This Skill>Next Skill Cast Time
-//6=skill CD
-//config[cClass][cSkillNum][skill_attribute]
-
-//LANCER:
-let lc=0; // Barrage count
-let debuffi=35000;// Debuff interval
+	
+	//Zerk Punish
+	function la(){
+		if(bait && laStatus==0){
+			startSkill(PUNISH_SKILL);lc++;
+			setTimeout(() => {
+				pressSkill(ZERK_BLOCK);releaseSkill(ZERK_BLOCK);la();
+			},punishd)//Punish>Block Delay
+		}else
+		if(laStatus!=0){//selecting what to do depending of zerk status
+			switch (laStatus) {
+				case 1:// Block
+					pressSkill(ZERK_BLOCK);
+				break;
+				case 2:// Dodge
+					releaseSkill(ZERK_BLOCK);startSkill(ZERK_DODGE);laStatus=0;bait = false;
+				break;
+			}
+		}
+	}
 //Lancer block barrage Macro
 function lm(){
 	if(bait && laStatus==0){////////////////////////////////////////////////////////////////////IF NOT BUSY
@@ -1094,10 +1160,9 @@ function lm(){
 			}, 18000)//Leap CD
 		}else// Barrage...
 		{
-			startSkill(lba2);
-			lc++;
+			startSkill(lba2);lc++;
 			setTimeout(() => {
-				pressSkill(lb);releaseSkill(lb);if(true){lm();}else{lc=0;}
+				pressSkill(lb);releaseSkill(lb);lm();
 			},barraged)//Block Delay
 		}
 	}else/////////////////////////////////////////////////////////////////////////////////////////IF BUSY
@@ -1112,6 +1177,21 @@ function lm(){
 		}
 	}
 }
+
+
+	
+//laStatus: 0=nothing 1=block 2=dodge
+//0=skill skill ID
+//1=skill Name
+//3=skill Type of cast
+//4=skill Priority
+//5=skill This Skill>Next Skill Cast Time
+//6=skill CD
+//config[cClass][cSkillNum][skill_attribute]
+
+//LANCER:
+let lc=0; // Barrage count
+let debuffi=35000;// Debuff interval
 /*
 	priority();
 	function priority(){
@@ -1130,8 +1210,7 @@ function lm(){
 		//if all in cd???
 	}
 */
-
-	//Class Test
+	//LEAPING
 	function Leap(){//=>Barrage
 		if(true)
 		{
@@ -1186,41 +1265,52 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 
 
 	
-	//Class Test
-	function la(){//Barrage
-		if(bait){lc++;startSkill(lba2);
-			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
-			lu();//1ST Skill
-			if(lc<0){la();}else//if ----lc<1
-			{//say(cg+"La Stoping");
-				lc=0;
-			}},115//barrage>spring delay
-			)
-		}
-	}
 	//Next skill in chain
 	function lu(){//Spring
-		if(bait){lc++;startSkill(131100);//startSkill(lba2);
+		if(bait){lc++;startSkill(10300);//10300
 			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
 			le();//2ND Skill
 			if(false){la()}else//if ----lc<1
 			{
 				lc=0;
-			}},780//tSkillDel//spring>Wallop delay
+			}},tSkillDel//tSkillDel//spring>Wallop delay
 			)
 		}
 	}//barraged - barrage delay //tSkillDel - test skill delay
 	function le(){//Wallop
-		if(bait){lc++;startSkill(251000);
+		if(bait){lc++;startSkill(10302);
 			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
 			li();//3RD Skill
 			if(false){la()}else//if ----lc<1
 			{
 				lc=0;
-			}},600//tSkillDel//wallop>superleap delay
+			}},tSkillDel//tSkillDel//wallop>superleap delay
 			)
 		}
 	}
+	function li(){//Wallop
+		if(bait){lc++;startSkill(10303);
+			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
+			lo();//3RD Skill
+			if(false){la()}else//if ----lc<1
+			{
+				lc=0;
+			}},tSkillDel//tSkillDel//wallop>superleap delay
+			)
+		}
+	}
+	function lo(){//Wallop
+		if(bait){lc++;startSkill(10301);
+			setTimeout(() => {//pressSkill(lb);releaseSkill(lb);
+			la();//3RD Skill
+			if(false){la()}else//if ----lc<1
+			{
+				lc=0;
+			}},tSkillDel//tSkillDel//wallop>superleap delay
+			)
+		}
+	}
+	/*
 	function li(){//SuperLeap
 		if(bait){lc++;startSkill(280100);
 			setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);lo();},90);//continue of lm
@@ -1274,10 +1364,7 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 			}},90//AA delay
 			)
 		}
-	}
-	//TESTED:
-	//Barrage>w8 115> Wallop
-	//autoattack> 520
+	}*/
 	
 	
 	function GetId(id){

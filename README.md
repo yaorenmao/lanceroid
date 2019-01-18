@@ -1,5 +1,7 @@
 Commands:
 
+NEW: Added Berserker Punishing Strike Macro (ofcourse u have to be in intimidation)
+
 !ar - list of commands + on/off mod
 
 Use Fishing Bait 1 to start/pause macro
@@ -14,6 +16,7 @@ Use Fishing Purple Worm to Enable/Disable Leaping combo (test function)
 
 Other Commands:
 
+Lancer:
 
 debuff - on/off debuff
 
