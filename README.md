@@ -4,7 +4,9 @@ NEW: Added Berserker Punishing Strike Macro (ofcourse u have to be in intimidati
 
 !ar - list of commands + on/off mod
 
-Use Fishing Bait 1 to start/pause macro
+Use Fishing Bait 1 to start/pause macro (For lancer)
+
+Use Fishing Bait 2-5 or Golden Worm to start/pause macro (For Zerk)
 
 Use Fishing Red Worm to Block/Release Block while Lanceroiding
 

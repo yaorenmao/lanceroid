@@ -337,7 +337,7 @@ module.exports = function Nyan(dispatch) {
 							+cp+"\ndebuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
 							+cp+"\npunishd "+cy+"[delay]"+cb+" - Punish>Block delay"+cv+"(Berserker)"+cb+", default is 90"
 							//+cp+"\ndebuffi "+cy+"[delay]"+cb+"- debuff>debuff delay"
-							+cy+"\nUse Fishing Bait I: start/pause, "+cr+"Red Worm: Block, "+cg+"Green Worm: Dodge, "+cb+"Blue Worm: When need mana"
+							+cy+"\nUse Fishing Bait I: start/pause(For Lancer), "+cy+"\nUse Fishing Bait II-V or Golden Worm: start/pause(For Zerk), "+cr+"Red Worm: Block, "+cg+"Green Worm: Dodge, "+cb+"Blue Worm: When need mana"
 					);
 				break;
 /*Block Delay*/	case 'punishd':
@@ -1094,7 +1094,7 @@ dispatch.command.message(cp+"How to create macro:\n"
 					}
 				break;
 /*Activate*/	default:// ANY OTHER BAIT
-					if(config[settings][0]=="zerk"){
+					if(config[settings][0]=="zerk" && event.id!=206000){
 						if(bait && laStatus==1){laStatus=0;releaseSkill(ZERK_BLOCK);lm();say("Macro Zerk continue..");break;}//IF BLOCKING
 						if(bait){pressSkill(ZERK_BLOCK);releaseSkill(ZERK_BLOCK);}//to allow movement after no action bug
 						laStatus=0;
