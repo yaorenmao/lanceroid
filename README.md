@@ -1,6 +1,8 @@
 Commands:
 
-NEW: Added Berserker Punishing Strike Macro (ofcourse u have to be in intimidation)
+NEW: Ninja Burning breath macro. Activate on Leaves on The wind skill, stop - any Fishing Bait
+
+Berserker Punishing Strike Macro (ofcourse u have to be in intimidation)
 
 !ar - list of commands + on/off mod
 

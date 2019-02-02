@@ -73,6 +73,21 @@ const { Readable, Writeable } = require('tera-data-parser/lib/protocol/stream');
 const ONLY_USER_HOOK = {order: -1000000, filter: {fake: false}};
 
 module.exports = function Nyan(dispatch) {
+			
+			let tskill=0;
+			let ninskill=210111;
+			let opsorc=false;
+			let skillu;
+			let evloc;
+			let evw;
+			let evdest;
+			let evunk;
+			let evmoving;
+            let evcontinue;
+			let evtarget;
+			let evunk2;
+	
+	
 		let leaping=false;
 		let doLeap=true;
 		let debuff=true;
@@ -133,9 +148,9 @@ module.exports = function Nyan(dispatch) {
 	{
 		config = require('./config.json');
 		if (config["settings"] === undefined || config["settings"] == null)
-		{//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY]
+		{//SETTINGS: [0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY, 14=AUTOSORC]
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100, false, 90];//5-10
+			750, 90, true, 0, 2000, false, 1100, false, 90, true];//5-10
 		}
 		if (config["sorc"] === undefined || config["sorc"] == null)
 		{
@@ -249,7 +264,7 @@ module.exports = function Nyan(dispatch) {
 		fs.writeFileSync(path.join(__dirname, "config.json"), JSON.stringify(config, null, 2));
 		//fs.writeFile(path.join(__dirname, 'config.json'), JSON.stringify(config, null, '\t'), err => {});
 	}
-	//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY]
+	//SETTINGS: 0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY, 14=AUTOSORC]
 	// Load from config
 	
 	//INIT
@@ -263,6 +278,7 @@ module.exports = function Nyan(dispatch) {
 	if(config[settings][11]==undefined){config[settings][11]="2000";saveConfig();}
 	if(config[settings][12]==undefined){config[settings][12]=false;saveConfig();}
 	if(config[settings][13]==undefined){config[settings][13]=90;saveConfig();}
+	if(config[settings][14]==undefined){config[settings][14]=true;saveConfig();}
 	if(config[settings][7]==undefined){config[settings][7]=90;saveConfig();}
 	if(config[settings][6]==undefined){config[settings][6]=90;saveConfig();}
 	
@@ -276,7 +292,7 @@ module.exports = function Nyan(dispatch) {
 	let aadelay = config[settings][11]; //AutoAttack interval
 	let punishd = config[settings][13]; //Punish Zerk delay
 	
-	
+	let autosorc=config[settings][14];
 	let bait = false; //BAIT CONTROL
 	
 	
@@ -332,6 +348,7 @@ module.exports = function Nyan(dispatch) {
 							+cp+"\nmana "+cb+"- add ComboAttack to regain mana, Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active, '
 							+cp+"\nmanadelay "+cy+"[delay]"+cb+" - ComboAttack delay, normal: 390-2400, Current: "+cg+config[settings][11]
 							+cp+"\ncoafblre "+cb+"- continue after block release: "+(coafblre ? cg+'' :cr+'Not ')+'Active'
+							+cp+"\nautosorc "+cb+"- on/off, Autosorc: "+(autosorc ? cg+'' :cr+'Not ')+'Active'
 							+co+"\nUse next commands if your barrage/debuff Block canceled before hit:"
 							+cp+"\nbbdelay "+cy+"[delay]"+cb+" - Barrage>Block delay, default is 90"
 							+cp+"\ndebuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
@@ -345,6 +362,10 @@ module.exports = function Nyan(dispatch) {
 					if(y<30){say(cp+"Select value more than 30 to prevent crash pls");break}
 					punishd=y;say(cp+"Punish>Block delay set to " + y +" (default is 90)");
 					config[settings][13]=y;saveConfig();
+				break;autosorc=config[settings][14];
+/*Debuff*/		case 'autosorc':
+					autosorc = !autosorc;say(cb+"Autosorc "+ cg + (autosorc ? cg+'Activated': cg+'Deactivated'));
+					config[settings][14]=autosorc;saveConfig();
 				break;
 /*Debuff*/		case 'leap':
 					leaping = !leaping;say(cb+"Leaping "+ cg + (leaping ? cg+'Activated': cg+'Deactivated'));
@@ -352,6 +373,10 @@ module.exports = function Nyan(dispatch) {
 				break;
 /*noaction*/	case 'noaction':
 					NO_ACTION = !NO_ACTION;say(cg+"NO_ACTION "+ cg + (NO_ACTION ? 'Activated':'Deactivated'));
+				break;
+/*tskill*/		case 'tskill':
+					if(y==undefined){say(co+"!ar tskill "+cy+"[skillid]"+cb+"Current Test Skill = "+tskill+cg);break;}
+					tskill=y;say(cp+"Test Skill set to "+cy+tskill);
 				break;
 /*TEST SKILL DEL*/case 'tdelay':
 					if(y==undefined){say(co+"!ar tdelay "+cy+"[delay], "+cb+"current delay = "+cg+config[settings][9]);break;}
@@ -1050,20 +1075,30 @@ dispatch.command.message(cp+"How to create macro:\n"
 	dispatch.hook('C_USE_ITEM', 3, event => {
 		if(enabled && (event.id==206004 || event.id==206003 || event.id==206002 || event.id==206001 || event.id==206000 || event.id==206005 || event.id==206006 || event.id==206007 || event.id==206008 || event.id==206009))
 		{
+			if(config[settings][0]=="valk"){//if Valk
+				bait = !bait;
+				if(bait)setTimeout(() => {valku()},200);
+			}
+			if(config[settings][0]=="sorc" && autosorc==true){//if SORC
+				autosorc=false;setTimeout(() => {autosorc=true;},300);
+			}
+			if(config[settings][0]=="ninja" && autosorc==true){//if SORC
+				autosorc=false;setTimeout(() => {autosorc=true;},1000);
+			}
 			switch (event.id) {//if(config[settings][0]=="zerk")
 /*Block*/		case 206005:// RED WORM BAIT
 					if(config[settings][0]=="zerk"){
 						if(bait){
 							if(laStatus!=1){// IF NOT BLOCKING> DO BLOCK
-							laStatus=1;say("Macro Zerk block..");}else
-							{laStatus=0;releaseSkill(ZERK_BLOCK);if(coafblre){lm();say("Macro Zerk continue..");}}//Release Block
+							laStatus=1;}else
+							{laStatus=0;releaseSkill(ZERK_BLOCK);if(coafblre){lm();}}//Release Block
 						}else{if(laStatus!=1){laStatus=1;pressSkill(ZERK_BLOCK);}else{if(laStatus!=2){laStatus=2;releaseSkill(ZERK_BLOCK);}}}
 					}
 					if(config[settings][0]=="lanc"){
 						if(bait){
 							if(laStatus!=1){// IF NOT BLOCKING> DO BLOCK
-							laStatus=1;say("Macro Lancer block..");}else
-							{laStatus=0;releaseSkill(lb);if(coafblre){lm();say("Macro Lancer continue..");}}//Release Block
+							laStatus=1;}else
+							{laStatus=0;releaseSkill(lb);if(coafblre){lm();}}//Release Block
 						}else{if(laStatus!=1){laStatus=1;pressSkill(lb);}else{if(laStatus!=2){laStatus=2;releaseSkill(lb);}}}
 					}
 				break;
@@ -1071,14 +1106,14 @@ dispatch.command.message(cp+"How to create macro:\n"
 					if(config[settings][0]=="zerk"){
 						if(bait){// dodge after combo ends
 							if(laStatus==1){laStatus=2;releaseSkill(ZERK_BLOCK);startSkill(ZERK_DODGE);bait = false;}
-							laStatus=2;say("Macro Zerk dodge..");
+							laStatus=2;
 						}//Release Block
 						else{startSkill(ZERK_DODGE);}// dodge now
 					}
 					if(config[settings][0]=="lanc"){
 						if(bait){// dodge after combo ends
 							if(laStatus==1){laStatus=2;releaseSkill(lb);startSkill(260100);bait = false;}
-							laStatus=2;say("Macro Lancer dodge..");
+							laStatus=2;
 						}//Release Block
 						else{startSkill(260100);}// dodge now
 					}
@@ -1095,18 +1130,18 @@ dispatch.command.message(cp+"How to create macro:\n"
 				break;
 /*Activate*/	default:// ANY OTHER BAIT
 					if(config[settings][0]=="zerk" && event.id!=206000){
-						if(bait && laStatus==1){laStatus=0;releaseSkill(ZERK_BLOCK);lm();say("Macro Zerk continue..");break;}//IF BLOCKING
+						if(bait && laStatus==1){laStatus=0;releaseSkill(ZERK_BLOCK);lm();break;}//IF BLOCKING
 						if(bait){pressSkill(ZERK_BLOCK);releaseSkill(ZERK_BLOCK);}//to allow movement after no action bug
 						laStatus=0;
-						bait = !bait;say("Macro " + (bait ? cg+'Enabled': cy+'Paused'));
+						bait = !bait;
 						if(!bait)lc=0;
 						setTimeout(() => {la()},200);
 					}
 					if(config[settings][0]=="lanc"){
-						if(bait && laStatus==1){laStatus=0;releaseSkill(lb);lm();say("Macro Lancer continue..");break;}//IF BLOCKING
+						if(bait && laStatus==1){laStatus=0;releaseSkill(lb);lm();break;}//IF BLOCKING
 						if(bait){pressSkill(lb);releaseSkill(lb);}//to allow movement after no action bug
 						laStatus=0;
-						bait = !bait;say("Macro " + (bait ? cg+'Enabled': cy+'Paused'));
+						bait = !bait;
 						if(!bait)lc=0;
 						//if(config[settings][0]==lancer)
 						setTimeout(() => {lm()},200);
@@ -1117,6 +1152,24 @@ dispatch.command.message(cp+"How to create macro:\n"
 		}
 	});
 	
+	//Valk
+	function valku(){
+		if(bait){
+			startSkill(85101);//85101 - Boom
+			setTimeout(() => {
+				valku();
+			},1630)//1630 for Boom
+		}
+	}
+	//Ninja
+	function nin(){
+		if(bait){
+			startSkill(210111);//210111 boomerang
+			setTimeout(() => {
+				nin();
+			},tSkillDel)//
+		}
+	}
 	//Zerk Punish
 	function la(){
 		if(bait && laStatus==0){
@@ -1401,10 +1454,27 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 		endpoints=event.endpoints;
 		if(enabled){eve(event.skill.id,15);getTime();debug(cg+'T'+timeid+': C_START_COMBO_INSTANT_SKILL(User): ' + event.skill.id);}
     });
+	ninskill=210140;//210111
 	// Called when you start skill
     dispatch.hook('C_START_SKILL', 7, ONLY_USER_HOOK, event => {
 		eTarget=event.target;
+		
+		
+			skillu=event.skill;
+			loc=event.loc;
+			w=event.w;
+			evdest=event.dest;
+			evunk=event.unk;
+			evmoving=event.moving;
+            evcontinue=event.continue;
+			evtarget=event.target;
+			evunk2=event.unk2;
+		
+		
+		
 		if(enabled){if(fakeS){pressSkill(event.skill.id);return false}eve(event.skill.id,0);getTime();debug('T'+timeid+': C_START_SKILL(User): ' + event.skill.id, "#0077FF");}
+		if(event.skill.id==360200){if(opsorc && autosorc){event.skill.id=360230}else{return false;};if(opsorc && autosorc){repeatsu(360230, 100)};return true;}
+		if(event.skill.id==30800){if(autosorc){event.skill.id=150732}else{return false;};if(autosorc){repeatsu(150732, 700)};return true;}//150732>>210111<210113 //210100           //80231-1-3
     });
 	
 	// Called when you press/release skill
@@ -1445,6 +1515,7 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 	// Called when??? can i use it to disable or fake anything?..
     dispatch.hook('S_ACTION_END', 5, {order: -1000000, filter: {fake: null}}, event => {
         if (!enabled || !(event.gameId == gameId)) return;
+		//if(event.skill.id==360230){return false}
 		if(NO_ACTION && event.skill.id==lba2){return false}
 		eve(event.skill.id,4); getTime();
 		abn('T'+timeid+': S_ACTION_END: ' + event.skill.id, "#00FF00");
@@ -1465,6 +1536,7 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 	
 	// Called when Abnormality(buff/effect) BEGIN
     dispatch.hook('S_ABNORMALITY_BEGIN', 3, (event) => {
+	if (event.target == gameId && event.id==502020) {opsorc=true;setTimeout(() => {opsorc=false;},12000)}
         if (!enabled || !(event.target == gameId)) return; //return if it's not your abnormality
 		eve(event.id,6); getTime();
 		abn('T'+timeid+': S_ABNORMALITY_BEGIN: '+event.id, "#FFFF00");
@@ -1536,7 +1608,34 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 		});
 		debug('T'+timeid+': C_START_COMBO_INSTANT_SKILL(Code): ' + argskillid, "#FF00FF");
 	}
+	
+	function repeatsu(skid, del) {
+		setTimeout(() => {if(enabled && autosorc){startSkillu(skid);startSkillu(skid);}
+			//le();
+			if(enabled && autosorc){repeatsu(skid, del);lc++;}else//if ----lc<1
+			{
+				lc=0;
+			}},del//
+			)
+		
+	}
 	// For 1-hit skills
+	
+	function startSkillu(argskillid, targ=0) {
+		getTime();
+		dispatch.toServer('C_START_SKILL', 7, {
+			skill: skillu,
+			loc: loc,
+			w: w,
+			dest: evdest,
+			unk: evunk,
+			moving: evmoving,
+            continue: evcontinue,/////////////////////////////////////////??
+			target: evtarget, //targ
+			unk2: evunk2
+		});
+		debug('T'+timeid+': C_START_SKILL(Code*): ' + argskillid, "#FF00FF");
+	}
 	function startSkill(argskillid, targ=0) {
 		getTime();
 		dispatch.toServer('C_START_SKILL', 7, {
