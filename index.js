@@ -74,6 +74,7 @@ const ONLY_USER_HOOK = {order: -1000000, filter: {fake: false}};
 
 module.exports = function Nyan(dispatch) {
 			
+			let ninjutsu=0;
 			let tskill=0;
 			let ninskill=210111;
 			let opsorc=false;
@@ -1474,8 +1475,24 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 		
 		if(enabled){if(fakeS){pressSkill(event.skill.id);return false}eve(event.skill.id,0);getTime();debug('T'+timeid+': C_START_SKILL(User): ' + event.skill.id, "#0077FF");}
 		if(event.skill.id==360200){if(opsorc && autosorc){event.skill.id=360230}else{return false;};if(opsorc && autosorc){repeatsu(360230, 100)};return true;}
-		if(event.skill.id==30800){if(autosorc){event.skill.id=150732}else{return false;};if(autosorc){repeatsu(150732, 700)};return true;}//150732>>210111<210113 //210100           //80231-1-3
+		if(event.skill.id==30800){if(autosorc){event.skill.id=150732}else{return false;};return true;}//150732>>210111<210113 //210100           //80231-1-3
     });
+	
+	function repeatsu(skid, del) {
+		if(enabled && autosorc && lc<0){
+			setTimeout(() => {if(enabled && autosorc){startSkillu(skid);}//startSkillu(skid);
+				//le();
+				if(enabled && autosorc && lc<0){repeatsu(skid, del);lc++;}else//if ----lc<1
+				{
+					lc=0;
+				}},del//
+				)
+		}
+	}
+	
+	
+	
+	
 	
 	// Called when you press/release skill
 	dispatch.hook('C_PRESS_SKILL', 4, ONLY_USER_HOOK, event => {
@@ -1519,6 +1536,9 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 		if(NO_ACTION && event.skill.id==lba2){return false}
 		eve(event.skill.id,4); getTime();
 		abn('T'+timeid+': S_ACTION_END: ' + event.skill.id, "#00FF00");
+		//NYAN!
+		if(event.skill.id==150732 && enabled && autosorc){if(ninjutsu==0){ninjutsu=1;startSkillu(150732);}else{ninjutsu--;}}//ninjutsu//autosorc=false;setTimeout(() => {autosorc=true;},100);
+		
 		//it's example from op-zerk
         /*if ([SKILL_DEXTER.toString().substring(0, 4), SKILL_SINISTER.toString().substring(0, 4)].includes(event.skill.id.toString().substring(0, 4))) {
             return false;
@@ -1609,17 +1629,6 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 		debug('T'+timeid+': C_START_COMBO_INSTANT_SKILL(Code): ' + argskillid, "#FF00FF");
 	}
 	
-	function repeatsu(skid, del) {
-		setTimeout(() => {if(enabled && autosorc){startSkillu(skid);startSkillu(skid);}
-			//le();
-			if(enabled && autosorc){repeatsu(skid, del);lc++;}else//if ----lc<1
-			{
-				lc=0;
-			}},del//
-			)
-		
-	}
-	// For 1-hit skills
 	
 	function startSkillu(argskillid, targ=0) {
 		getTime();

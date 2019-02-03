@@ -2,6 +2,8 @@ Commands:
 
 NEW: Ninja Burning breath macro. Activate on Leaves on The wind skill, stop - any Fishing Bait
 
+if ninja script stop working use !proxy reload lanceroid
+
 Berserker Punishing Strike Macro (ofcourse u have to be in intimidation)
 
 !ar - list of commands + on/off mod
