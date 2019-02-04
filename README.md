@@ -1,3 +1,5 @@
+Fixed ninja script not working. added command !ar ninjamode [0 or 1] - set it to 1 if your ninja cast skill 2 times in a row, set it to 0 if ninja stopped after 2nd attack.
+
 Commands:
 
 NEW: Ninja Burning breath macro. Activate on Leaves on The wind skill, stop - any Fishing Bait
@@ -24,13 +26,13 @@ Other Commands:
 
 Lancer:
 
-debuff - on/off debuff
+!ar debuff - on/off debuff
 
-mana - add autoAttack to regain mana on/off
+!ar mana - add autoAttack to regain mana on/off
 
-manadelay [delay] - AutoAttack delay - use it when u want more or less mana
+!ar manadelay [delay] - AutoAttack delay - use it when u want more or less mana
 
-coafblre - continue after block release on/off
+!ar coafblre - continue after block release on/off
 
 
 To Devs: Feel free to change this mod ^_^

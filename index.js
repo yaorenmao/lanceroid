@@ -149,9 +149,9 @@ module.exports = function Nyan(dispatch) {
 	{
 		config = require('./config.json');
 		if (config["settings"] === undefined || config["settings"] == null)
-		{//SETTINGS: [0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY, 14=AUTOSORC]
+		{//SETTINGS: [0=Class, 1=IS_ENABLED, 2=IS_Debug, 3=IS_Abnorm, 4=debuff, 5=CONTINUE_MACRO_AFTER_BLOCK_RELEASE, 6=barraged, 7=debuffd, 8=CATCHED_ID, 9=TEST_SKILL_DELAY, 10=ISAUTOATTACK, 11=AUTOATTACK_INTERVAL, 12=ISLEAPING, 13=PUNISH_DELAY, 14=AUTOSORC, 15=ninju]
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100, false, 90, true];//5-10
+			750, 90, true, 0, 2000, false, 1100, false, 90, true, 0];//5-10
 		}
 		if (config["sorc"] === undefined || config["sorc"] == null)
 		{
@@ -229,7 +229,7 @@ module.exports = function Nyan(dispatch) {
 	catch(error) //if file not exist this creates new
 	{
 			config[settings]=["sorc", true, false, false,        true,//0-4
-			750, 90, true, 0, 2000, false, 1100, false, 90];//5-10
+			750, 90, true, 0, 2000, false, 1100, false, 90, true, 0];//5-10
 		config[sorcerer]=[];
 		config["r"+sorcerer]=[];
 		config[archer]=[];
@@ -280,6 +280,7 @@ module.exports = function Nyan(dispatch) {
 	if(config[settings][12]==undefined){config[settings][12]=false;saveConfig();}
 	if(config[settings][13]==undefined){config[settings][13]=90;saveConfig();}
 	if(config[settings][14]==undefined){config[settings][14]=true;saveConfig();}
+	if(config[settings][15]==undefined){config[settings][15]=0;saveConfig();}
 	if(config[settings][7]==undefined){config[settings][7]=90;saveConfig();}
 	if(config[settings][6]==undefined){config[settings][6]=90;saveConfig();}
 	
@@ -294,6 +295,7 @@ module.exports = function Nyan(dispatch) {
 	let punishd = config[settings][13]; //Punish Zerk delay
 	
 	let autosorc=config[settings][14];
+	let ninju=config[settings][15];
 	let bait = false; //BAIT CONTROL
 	
 	
@@ -345,17 +347,18 @@ module.exports = function Nyan(dispatch) {
 /*commands*/	case 'lanceroid':
 					say(
 							cp+"\nar "+cb+"- on/off"
-							+cp+"\ndebuff "+cb+"- on/off, Debuff: "+(shoulddebuff ? cg+'' :cr+'Not ')+'Active'
-							+cp+"\nmana "+cb+"- add ComboAttack to regain mana, Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active, '
-							+cp+"\nmanadelay "+cy+"[delay]"+cb+" - ComboAttack delay, normal: 390-2400, Current: "+cg+config[settings][11]
-							+cp+"\ncoafblre "+cb+"- continue after block release: "+(coafblre ? cg+'' :cr+'Not ')+'Active'
-							+cp+"\nautosorc "+cb+"- on/off, Autosorc: "+(autosorc ? cg+'' :cr+'Not ')+'Active'
+							+cp+"\n!ar debuff "+cb+"- on/off, Debuff: "+(shoulddebuff ? cg+'' :cr+'Not ')+'Active'
+							+cp+"\n!ar mana "+cb+"- add ComboAttack to regain mana, Mana: "+(autoAttack ? cg+'' :cr+'Not ')+'Active, '
+							+cp+"\n!ar manadelay "+cy+"[delay]"+cb+" - ComboAttack delay, normal: 390-2400, Current: "+cg+config[settings][11]
+							+cp+"\n!ar coafblre "+cb+"- continue after block release: "+(coafblre ? cg+'' :cr+'Not ')+'Active'
+							+cp+"\n!ar autosorc "+cb+"- on/off, Autosorc: "+(autosorc ? cg+'' :cr+'Not ')+'Active'
 							+co+"\nUse next commands if your barrage/debuff Block canceled before hit:"
-							+cp+"\nbbdelay "+cy+"[delay]"+cb+" - Barrage>Block delay, default is 90"
-							+cp+"\ndebuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
-							+cp+"\npunishd "+cy+"[delay]"+cb+" - Punish>Block delay"+cv+"(Berserker)"+cb+", default is 90"
+							+cp+"\n!ar bbdelay "+cy+"[delay]"+cb+" - Barrage>Block delay, default is 90"
+							+cp+"\n!ar debuffd "+cy+"[delay]"+cb+" - debuff>block delay, default is 750"
+							+cp+"\n!ar punishd "+cy+"[delay]"+cb+" - Punish>Block delay"+cv+"(Berserker)"+cb+", default is 90"
 							//+cp+"\ndebuffi "+cy+"[delay]"+cb+"- debuff>debuff delay"
 							+cy+"\nUse Fishing Bait I: start/pause(For Lancer), "+cy+"\nUse Fishing Bait II-V or Golden Worm: start/pause(For Zerk), "+cr+"Red Worm: Block, "+cg+"Green Worm: Dodge, "+cb+"Blue Worm: When need mana"
+							+cp+"\n!ar ninjamode "+cy+"[0 or 1]"+cb+" - if ninja script doesn't continue auto-attack try to change this value 0 or 1"
 					);
 				break;
 /*Block Delay*/	case 'punishd':
@@ -364,6 +367,12 @@ module.exports = function Nyan(dispatch) {
 					punishd=y;say(cp+"Punish>Block delay set to " + y +" (default is 90)");
 					config[settings][13]=y;saveConfig();
 				break;autosorc=config[settings][14];
+/*TEST SKILL DEL*/case 'ninjamode':
+					if(y==undefined){say(co+"!ar ninjamode "+cy+"[0 or 1], "+cb+"current mode = "+cg+config[settings][15]);break;}
+					if(y!=0 && y!=1){say(cr+"Please only 1 or 0 as argument!");break;}
+					ninju=y;say(cp+"ninja mode set to "+cy+ninju);
+					config[settings][15]=ninju;saveConfig();
+				break;
 /*Debuff*/		case 'autosorc':
 					autosorc = !autosorc;say(cb+"Autosorc "+ cg + (autosorc ? cg+'Activated': cg+'Deactivated'));
 					config[settings][14]=autosorc;saveConfig();
@@ -1537,7 +1546,20 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 		eve(event.skill.id,4); getTime();
 		abn('T'+timeid+': S_ACTION_END: ' + event.skill.id, "#00FF00");
 		//NYAN!
-		if(event.skill.id==150732 && enabled && autosorc){if(ninjutsu==0){ninjutsu=1;startSkillu(150732);}else{ninjutsu--;}}//ninjutsu//autosorc=false;setTimeout(() => {autosorc=true;},100);
+		if(event.skill.id==150732 && enabled && autosorc){
+			if(ninju==0){
+				startSkillu(150732);
+				
+			}else if(ninju==1){
+				if(ninjutsu==0){
+				ninjutsu=1;
+				startSkillu(150732);
+				}else{ninjutsu--;}
+			}
+		}
+			
+			
+			//ninjutsu//autosorc=false;setTimeout(() => {autosorc=true;},100);
 		
 		//it's example from op-zerk
         /*if ([SKILL_DEXTER.toString().substring(0, 4), SKILL_SINISTER.toString().substring(0, 4)].includes(event.skill.id.toString().substring(0, 4))) {
