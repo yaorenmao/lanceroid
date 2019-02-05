@@ -1551,7 +1551,7 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 				startSkillu(150732);
 				
 			}else if(ninju==1){
-				if(ninjutsu==0){
+				if(ninjutsu<=0){
 				ninjutsu=1;
 				startSkillu(150732);
 				}else{ninjutsu--;}
@@ -1631,6 +1631,7 @@ setTimeout(() => {pressSkill(lb);setTimeout(() => {releaseSkill(lb);//long block
 	// GameId, Class
 	
     dispatch.hook('S_LOGIN', 10, ONLY_USER_HOOK, event => {
+        gameId = event.gameId;
         model = event.templateId;//used to get player class
 		setClass((model - 10101) % 100);
     });
