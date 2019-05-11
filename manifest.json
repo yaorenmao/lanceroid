@@ -1,0 +1,21 @@
+{
+    "files": {
+        "index.js": "4375d3d73e7c9eba464fc7053ed483331f3f301a994d07d58b57f97d43138be0",
+        "module.json": "a5bd6fd6f6af46de6f8e531a09bf07dff9bb0e76cb78032ca19e5fada82a4e31"
+    },
+    "defs": {
+        "C_PLAYER_LOCATION": 5,
+        "C_PRESS_SKILL": 4,
+        "C_START_COMBO_INSTANT_SKILL": 4,
+        "C_START_SKILL": 7,
+        "C_START_TARGETED_SKILL": 6,
+        "C_USE_ITEM": 3,
+        "S_ABNORMALITY_BEGIN": 3,
+        "S_ABNORMALITY_END": 1,
+        "S_ACTION_END": 5,
+        "S_EACH_SKILL_RESULT": 12,
+        "S_LOGIN": 13,
+        "S_PLAYER_STAT_UPDATE": 10,
+        "S_START_COOLTIME_SKILL": 3
+    }
+}

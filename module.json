@@ -1,0 +1,16 @@
+{
+    "disableAutoUpdate": false,
+    "name": "Lanceroid",
+    "options": {
+        "niceName": "Lanceroid",
+        "guiName": "Lanceroid",
+        "settingsFile": "config.json",
+        "settingsMigrator": "settings_migrator.js",
+        "settingsVersion": 1
+    },
+    "author": "ZC",
+    "description": "忍者-无限喷火(无查克拉消耗) 枪骑-自动连技能 ...等",
+    "servers": ["https://raw.githubusercontent.com/tera-mod/Lanceroid/master/"],
+    "supportUrl": "https://github.com/tera-mod/Lanceroid/issues",
+    "version": "81.03"
+}
