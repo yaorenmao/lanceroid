@@ -1844,7 +1844,7 @@ module.exports = function Nyan(mod) {
     //**************************************************************************************************************
     //**************************************************************************************************************
     //**************************************************************************************************************
-    mod.hook('C_START_COMBO_INSTANT_SKILL', 4, ONLY_USER_HOOK, event => {
+    mod.hook('C_START_COMBO_INSTANT_SKILL', 6, ONLY_USER_HOOK, event => {
         targets = event.targets;
         endpoints = event.endpoints;
         if (enabled) {
@@ -1938,7 +1938,7 @@ module.exports = function Nyan(mod) {
         }
     });
     // Called when????????????????? C_START_TARGETED_SKILL
-    mod.hook('C_START_INSTANCE_SKILL', 5, ONLY_USER_HOOK, event => {
+    mod.hook('C_START_INSTANCE_SKILL', 7, ONLY_USER_HOOK, event => {
         if (enabled) {
             eve(event.skill.id, 10);
             getTime();
@@ -1955,7 +1955,7 @@ module.exports = function Nyan(mod) {
     });
 
     // Called when??? can i use it to disable or fake anything?..
-    mod.hook('S_ACTION_STAGE', 8, event => { //, {order: -1000000, filter: {fake: null}} //to hook only crafted
+    mod.hook('S_ACTION_STAGE', 9, event => { //, {order: -1000000, filter: {fake: null}} //to hook only crafted
         if (!enabled || !(event.gameId == gameId))
             return;
         if (NO_ACTION && event.skill.id == lba2) {
@@ -2091,7 +2091,7 @@ module.exports = function Nyan(mod) {
 
     function comboSkill(argskillid, targ = 0) {
         getTime();
-        mod.toServer('C_START_COMBO_INSTANT_SKILL', 4, {
+        mod.toServer('C_START_COMBO_INSTANT_SKILL', 6, {
             skill: {
                 reserved: 0,
                 npc: false,

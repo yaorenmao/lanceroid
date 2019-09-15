@@ -1,12 +1,12 @@
 {
     "files": {
-        "index.js": "6336de0a9ad52a78ad1b263c9a93674745bf88e36655a9ebde14bfedd60e2456",
+        "index.js": "bb4644e4b93caf0f99c80e0d5a532793a88eefce123ee32e402b741ef46a7418",
         "module.json": "be5b6d820dca240cf1490c185c5758d046ca16ebb1d40ea0c8c1adeec609edfc"
     },
     "defs": {
         "C_PLAYER_LOCATION": 5,
         "C_PRESS_SKILL": 4,
-        "C_START_COMBO_INSTANT_SKILL": 4,
+        "C_START_COMBO_INSTANT_SKILL": 6,
         "C_START_SKILL": 7,
         "C_START_TARGETED_SKILL": 7,
         "C_USE_ITEM": 3,
