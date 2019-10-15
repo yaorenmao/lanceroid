@@ -2011,7 +2011,7 @@ module.exports = function Nyan(mod) {
 
     // Called when skill hit target
     //mod.hook("S_EACH_SKILL_RESULT", 12, { filter: { fake: null }}, sEachSkillResult);
-    mod.hook('S_EACH_SKILL_RESULT', 13, (event) => {
+    mod.hook('S_EACH_SKILL_RESULT', 14, (event) => {
         if (!enabled)
             return;
         eve(event.skill.id, 5);
@@ -2021,7 +2021,7 @@ module.exports = function Nyan(mod) {
     })
 
     // Called when Abnormality(buff/effect) BEGIN
-    mod.hook('S_ABNORMALITY_BEGIN', 3, (event) => {
+    mod.hook('S_ABNORMALITY_BEGIN', 4, (event) => {
         if (event.target == gameId && event.id == 502020) {
             opsorc = true;
             setTimeout(() => {
@@ -2063,7 +2063,7 @@ module.exports = function Nyan(mod) {
     //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
     // AttackSpeed, HP
-    mod.hook('S_PLAYER_STAT_UPDATE', 12, ONLY_USER_HOOK, event => {
+    mod.hook('S_PLAYER_STAT_UPDATE', 13, ONLY_USER_HOOK, event => {
         attackSpeed = (event.attackSpeed + event.attackSpeedBonus) / event.attackSpeed;
         if (event.hp == 0) {
             //when you are dead

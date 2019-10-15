@@ -1,7 +1,7 @@
 {
     "files": {
-        "index.js": "bb4644e4b93caf0f99c80e0d5a532793a88eefce123ee32e402b741ef46a7418",
-        "module.json": "5f033b6b856583ffea8e8d3d1b94032e8557bd6a4da128f3fce37f6ec6806411"
+        "index.js": "c1fba66609b8eff676f1302736bc588e5f6b0ab062328148e4ff03b98ca32357",
+        "module.json": "1980fb2d8b23be1d03cb07a8e2bca937e65f16d653e582ba9ff554f64dba9884"
     },
     "defs": {
         "C_PLAYER_LOCATION": 5,
@@ -10,11 +10,11 @@
         "C_START_SKILL": 7,
         "C_START_TARGETED_SKILL": 7,
         "C_USE_ITEM": 3,
-        "S_ABNORMALITY_BEGIN": 3,
+        "S_ABNORMALITY_BEGIN": 4,
         "S_ABNORMALITY_END": 1,
         "S_ACTION_END": 5,
-        "S_EACH_SKILL_RESULT": 13,
-        "S_PLAYER_STAT_UPDATE": 12,
+        "S_EACH_SKILL_RESULT": 14,
+        "S_PLAYER_STAT_UPDATE": 13,
         "S_START_COOLTIME_SKILL": 3
     }
 }
